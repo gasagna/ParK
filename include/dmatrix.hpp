@@ -52,7 +52,7 @@ public:
     // used in e.g. a copy assignment operation on a DVector.
     // Note 'x' is not marked const, as we shift the data
     // up or down during the matrix-vector product
-    DMatVec<OPER, X, NBORDER> operator*(DVector<X, NBORDER>& x) {
+    DMatVec<OPER, X, NBORDER> operator*(DVector<X, NBORDER>& x) const {
         return { *this, x };
     }
 
