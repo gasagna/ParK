@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
-#include "PaKr.hpp"
+#include "ParK.hpp"
 #include "mpi.h"
 
 

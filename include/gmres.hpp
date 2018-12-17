@@ -2,7 +2,7 @@
 
 #include "arnoldi.hpp"
 
-namespace PaKr {
+namespace ParK {
 
 ////////////////////////////////////////////////////////////////
 // Options for the solver
