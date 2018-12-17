@@ -25,7 +25,7 @@ class DMatrix {
 private:
     DMatrixBandType _btype;
     const DInfo     _dinfo;
-    OPER            _oper;
+    const OPER&     _oper;
     // std::array<DVector<X, NBORDER>, NBORDER> _rborder;
     // std::array<DVector<X, NBORDER>, NBORDER> _dborder;
 
@@ -41,16 +41,18 @@ public:
     //     : _isupper(isupper), _dinfo(comm), _op(op), _rborder(rborder), _dborder(dborder) {}
 
     // provide an optional constructor when NBORDER = 0
-    DMatrix(MPI_Comm comm, OPER& oper, DMatrixBandType btype)
+    DMatrix(MPI_Comm comm, const OPER& oper, DMatrixBandType btype)
         : _btype(btype)
         , _dinfo(comm)
         , _oper(oper) {
         static_assert(NBORDER == 0);
     }
 
-    // when we take A*x, we return a lazy object that can be
-    // used in e.g. a copy assignment operation on a DVector
-    DMatVec<X, OPER, NBORDER> operator*(const DVector<X, NBORDER>& x) {
+    // When we take A*x, we return a lazy object that can be
+    // used in e.g. a copy assignment operation on a DVector.
+    // Note 'x' is not marked const, as we shift the data
+    // up or down during the matrix-vector product
+    DMatVec<X, OPER, NBORDER> operator*(DVector<X, NBORDER>& x) {
         return { *this, x };
     }
 
@@ -60,7 +62,7 @@ public:
         return _btype;
     }
 
-    OPER& oper() {
+    const OPER& oper() const {
         return _oper;
     }
 
@@ -78,8 +80,8 @@ template <
 struct DMatVec {
     ////////////////////////////////////////////////////////////////
     // members
-    DMatrix<X, OPER, NBORDER> _dmat;
-    DVector<X, NBORDER>       _x;
+    const DMatrix<X, OPER, NBORDER>& _dmat;
+    DVector<X, NBORDER>&             _x;
 
     ////////////////////////////////////////////////////////////////
     // actually executes y = A*x
