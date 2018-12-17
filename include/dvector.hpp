@@ -1,6 +1,7 @@
 #pragma once
 #include "mpi.h"
 #include <array>
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <numeric>
