@@ -15,8 +15,7 @@ public:
     ArnoldiCache(MAT const& _mat, VEC const& v)
         : mat(_mat) {
         // make a first vector
-        VEC q1 = v;
-        q1     = v / norm(q1);
+        VEC q1 = v / norm(v);
         Qs.push_back(q1);
     }
 
