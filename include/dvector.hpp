@@ -13,8 +13,8 @@ namespace ParK {
 /////////////////////////////////////////////////////////////////////////////////////////
 // Forward declaration
 template <
-    typename X,
     typename OP,
+    typename X,
     std::size_t NBORDER>
 struct DMatVec;
 
@@ -83,7 +83,7 @@ public:
     // is automatically initialized by the compiler and is filled
     // by the call to 'execute'
     template <typename OPER>
-    DVector(DMatVec<X, OPER, NBORDER>&& m)
+    DVector(DMatVec<OPER, X, NBORDER>&& m)
         : _dinfo(m._x.dinfo().comm())
         , _head(similar(m._x.head()))
         , _other(similar(m._x.other())) {
@@ -107,7 +107,7 @@ public:
 
     // Copy assignment from a lazy matmul object
     template <typename OPER>
-    DVector<X, NBORDER>& operator=(DMatVec<X, OPER, NBORDER>&& m) {
+    DVector<X, NBORDER>& operator=(DMatVec<OPER, X, NBORDER>&& m) {
         m.execute(*this);
         return *this;
     }

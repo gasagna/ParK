@@ -10,16 +10,16 @@ namespace ParK {
 /////////////////////////////////////////////////////////////////////////////////////////
 // Forward declaration
 template <
-    typename X,
     typename OP,
+    typename X,
     std::size_t NBORDER>
 struct DMatVec;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Class for a distribute matrix with bidiagonal, block cyclic structure
 template <
-    typename X,
     typename OPER,
+    typename X,
     std::size_t NBORDER>
 class DMatrix {
 private:
@@ -52,7 +52,7 @@ public:
     // used in e.g. a copy assignment operation on a DVector.
     // Note 'x' is not marked const, as we shift the data
     // up or down during the matrix-vector product
-    DMatVec<X, OPER, NBORDER> operator*(DVector<X, NBORDER>& x) {
+    DMatVec<OPER, X, NBORDER> operator*(DVector<X, NBORDER>& x) {
         return { *this, x };
     }
 
@@ -74,13 +74,13 @@ public:
 ////////////////////////////////////////////////////////////////
 // Lazy matmul object that gets created when we execute A*x
 template <
-    typename X,
     typename OPER,
+    typename X,
     std::size_t NBORDER>
 struct DMatVec {
     ////////////////////////////////////////////////////////////////
     // members
-    const DMatrix<X, OPER, NBORDER>& _dmat;
+    const DMatrix<OPER, X, NBORDER>& _dmat;
     DVector<X, NBORDER>&             _x;
 
     ////////////////////////////////////////////////////////////////
