@@ -112,16 +112,42 @@ public:
         return *this;
     }
 
-    // Copy assignment from a DVectorExpr.
-    // This assumes the dinfo structure has been alreay initialised
-    template <typename E>
-    DVector<X, NBORDER>& operator=(const DVectorExpr<E>& a) {
-        for (auto i = 0; i != _head.size(); i++)
-            _head[i] = a(i, TAG_HEAD());
-
-        for (auto i = 0; i != _tail.size(); i++)
-            _tail[i] = a(i, TAG_TAIL());
+// Define in place assignment operations such as +=, -= and = with
+// DVectorExpr objects and *=, /= and = with scalars. This is
+// because we treat DVector as an element of a vector space, and
+// a vector plus a scalar means nothing
+#define _DEFINE_INPLACE_OP_DVECEXPR(_Op)                         \
+    template <typename E>                                        \
+    DVector<X, NBORDER>& operator _Op(const DVectorExpr<E>& a) { \
+        for (auto i = 0; i != _head.size(); i++)                 \
+            _head[i] _Op a(i, TAG_HEAD());                       \
+                                                                 \
+        for (auto i = 0; i != _tail.size(); i++)                 \
+            _tail[i] _Op a(i, TAG_TAIL());                       \
+                                                                 \
+        return *this;                                            \
     }
+    _DEFINE_INPLACE_OP_DVECEXPR(+=)
+    _DEFINE_INPLACE_OP_DVECEXPR(-=)
+    _DEFINE_INPLACE_OP_DVECEXPR(=)
+#undef _DEFINE_INPLACE_OP_DVECEXPR
+
+#define _DEFINE_INPLACE_OP_SCALAR(_Op)                                   \
+    template <                                                           \
+        typename T,                                                      \
+        typename std::enable_if<std::is_arithmetic_v<T>, int>::type = 0> \
+    DVector<X, NBORDER>& operator _Op(const T& a) {                      \
+        for (auto i = 0; i != _head.size(); i++)                         \
+            _head[i] _Op a;                                              \
+                                                                         \
+        for (auto i = 0; i != _tail.size(); i++)                         \
+            _tail[i] _Op a;                                              \
+        return *this;                                                    \
+    }
+    _DEFINE_INPLACE_OP_SCALAR(*=)
+    _DEFINE_INPLACE_OP_SCALAR(/=)
+    _DEFINE_INPLACE_OP_SCALAR(=)
+#undef _DEFINE_INPLACE_OP_SCALAR
 
     /***********************************************************************************/
     // Move constructors and assignement

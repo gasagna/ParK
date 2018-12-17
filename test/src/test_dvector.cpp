@@ -82,6 +82,32 @@ TEST_CASE("DVector", "tests") {
         REQUIRE(d.dinfo().size() == b.dinfo().size());
     }
 
+    SECTION("in place assignment from DVectorExpr") {
+        DVector<X, 1> d_add  = a;
+                      d_add += a;
+        REQUIRE(d_add(0, TAG_HEAD()) == 2*a(0, TAG_HEAD()));
+        REQUIRE(d_add(1, TAG_HEAD()) == 2*a(1, TAG_HEAD()));
+        REQUIRE(d_add(0, TAG_TAIL()) == 2*a(0, TAG_TAIL()));
+
+        DVector<X, 1> d_sub  = a;
+                      d_sub -= a;
+        REQUIRE(d_sub(0, TAG_HEAD()) == 0);
+        REQUIRE(d_sub(1, TAG_HEAD()) == 0);
+        REQUIRE(d_sub(0, TAG_TAIL()) == 0);
+
+        DVector<X, 1> d_mul  = a;
+                      d_mul *= 2;
+        REQUIRE(d_mul(0, TAG_HEAD()) == 2*a(0, TAG_HEAD()));
+        REQUIRE(d_mul(1, TAG_HEAD()) == 2*a(1, TAG_HEAD()));
+        REQUIRE(d_mul(0, TAG_TAIL()) == 2*a(0, TAG_TAIL()));
+
+        DVector<X, 1> d_div  = a;
+                      d_div /= 2;
+        REQUIRE(d_div(0, TAG_HEAD()) == 0.5*a(0, TAG_HEAD()));
+        REQUIRE(d_div(1, TAG_HEAD()) == 0.5*a(1, TAG_HEAD()));
+        REQUIRE(d_div(0, TAG_TAIL()) == 0.5*a(0, TAG_TAIL()));
+    }
+
     SECTION("DVector makes a copy of the data") {
         X             data = { 1, 2 };
         int           tail = 0;
