@@ -19,22 +19,26 @@ struct DMatVec;
 template <typename X, std::size_t NBORDER, typename OPER>
 class DMatrix {
 private:
-    DMatrixBandType _btype;
-    const DInfo     _dinfo;
-    const OPER&     _oper;
-    // std::array<DVector<X, NBORDER>, NBORDER> _rborder;
-    // std::array<DVector<X, NBORDER>, NBORDER> _dborder;
+    DMatrixBandType                  _btype;
+    const DInfo                      _dinfo;
+    const OPER&                      _oper;
+    std::vector<DVector<X, NBORDER>> _rborders;
+    std::vector<DVector<X, NBORDER>> _dborders;
 
 public:
     // the constructor accepts a communicator, an operator used
     // to compute the diagonal submatrix/subvector products and
-    // an array of right and lower bordering vectors.
-    // DMatrix(MPI_Comm comm,
-    //         OP &op,
-    //         // std::array<DVector<X, NBORDER>, NBORDER> rborder,
-    //         // std::array<DVector<X, NBORDER>, NBORDER> dborder,
-    //         const bool isupper = false)
-    //     : _isupper(isupper), _dinfo(comm), _op(op), _rborder(rborder), _dborder(dborder) {}
+    // a distributed array, which is used to constructor the 
+    // bordering vectors by creating copies of it.
+    DMatrix(MPI_Comm            comm,
+            const OPER&         oper,
+            DMatrixBandType     btype,
+            DVector<X, NBORDER> seed)
+        : _isupper(isupper)
+        , _dinfo(comm)
+        , _op(op)
+        , _rborders(NBORDER, seed)
+        , _dborders(NBORDER, seed) {}
 
     // provide an optional constructor when NBORDER = 0
     DMatrix(MPI_Comm        comm,
