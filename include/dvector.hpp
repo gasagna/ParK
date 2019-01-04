@@ -73,7 +73,7 @@ public:
         , _other(similar(_head))
         , _tail({ static_cast<double>(tail)... }) {
         static_assert(sizeof...(TAIL) == NBORDER,
-            "variadic input must be consistent with the template parameter.");
+                      "variadic input must be consistent with the template parameter.");
     }
 
     // Copy constructor from a DMatVec
@@ -162,7 +162,7 @@ public:
         , _other(similar(_head)) // this assumes _head is initialised first
         , _tail({ static_cast<double>(tail)... }) {
         static_assert(sizeof...(TAIL) == NBORDER,
-            "variadic input must be consistent with the template parameter.");
+                      "variadic input must be consistent with the template parameter.");
     }
 
     /***********************************************************************************/
@@ -201,12 +201,8 @@ public:
         // we need to take care of the boundaries, so we use modulo arithmetic
         int dir = btype == DMatrixBandType::UPPER ? 1 : -1;
         // FIXME: make this type generic
-        MPI_Irecv(_other.data(), _other.size(),
-            MPI_DOUBLE, (_dinfo.rank() + dir + _dinfo.size()) % _dinfo.size(),
-            0, _dinfo.comm(), &_requests[0]);
-        MPI_Isend(_head.data(), _head.size(),
-            MPI_DOUBLE, (_dinfo.rank() - dir + _dinfo.size()) % _dinfo.size(),
-            0, _dinfo.comm(), &_requests[1]);
+        MPI_Irecv(_other.data(), _other.size(), MPI_DOUBLE, (_dinfo.rank() + dir + _dinfo.size()) % _dinfo.size(), 0, _dinfo.comm(), &_requests[0]);
+        MPI_Isend(_head.data(), _head.size(), MPI_DOUBLE, (_dinfo.rank() - dir + _dinfo.size()) % _dinfo.size(), 0, _dinfo.comm(), &_requests[1]);
     }
 
     // wait until all shifts have been processed
@@ -256,7 +252,9 @@ double operator*(const DVector<X, NBORDER>& a, const DVector<X, NBORDER>& b) {
     // value to all other processes. Finally, we sum this value to
     // the global value and return
     double prod = std::inner_product(a.tail().begin(),
-        a.tail().end(), b.tail().begin(), 0);
+                                     a.tail().end(),
+                                     b.tail().begin(),
+                                     0);
 
     MPI_Bcast(&prod, 1, MPI_DOUBLE, a.dinfo().size() - 1, a.dinfo().comm());
 
@@ -274,39 +272,37 @@ auto norm(const DVector<X, NBORDER>& y) {
 /***********************************************************************************/
 
 // define division and multiplication by a scalar
-#define _DEFINE_MULDIV_OPERATOR(_Op, _OpName)                                  \
-                                                                               \
-    template <typename E, typename S>                                          \
-    class DVector##_OpName : public DVectorExpr<DVector##_OpName<E, S>> {      \
-    private:                                                                   \
-        const DVectorExpr<E>& _u;                                              \
-        const S&              _v;                                              \
-                                                                               \
-    public:                                                                    \
-        DVector##_OpName(const DVectorExpr<E>& u, const S& v)                  \
-            : _u(u)                                                            \
-            , _v(v) {}                                                         \
-                                                                               \
-        template <typename TAG>                                                \
-        auto operator()(size_t i, TAG tag) const { return _u(i, tag) _Op _v; } \
-        template <typename TAG>                                                \
-        auto  size(TAG tag) const { return _u.size(tag); }                     \
-        auto& head() const { return _u.head(); }                               \
-        auto& other() const { return _u.other(); }                             \
-        auto& tail() const { return _u.tail(); }                               \
-        auto& dinfo() const { return _u.dinfo(); }                             \
-    };                                                                         \
-                                                                               \
-    template <typename E, typename S,                                          \
-        typename std::enable_if<std::is_arithmetic_v<S>, int>::type = 0>       \
-    DVector##_OpName<E, S> operator _Op(const DVectorExpr<E>& u, const S& v) { \
-        return { u, v };                                                       \
-    }                                                                          \
-                                                                               \
-    template <typename E, typename S,                                          \
-        typename std::enable_if<std::is_arithmetic_v<S>, int>::type = 0>       \
-    DVector##_OpName<E, S> operator _Op(const S& v, const DVectorExpr<E>& u) { \
-        return { u, v };                                                       \
+#define _DEFINE_MULDIV_OPERATOR(_Op, _OpName)                                                          \
+                                                                                                       \
+    template <typename E, typename S>                                                                  \
+    class DVector##_OpName : public DVectorExpr<DVector##_OpName<E, S>> {                              \
+    private:                                                                                           \
+        const DVectorExpr<E>& _u;                                                                      \
+        const S&              _v;                                                                      \
+                                                                                                       \
+    public:                                                                                            \
+        DVector##_OpName(const DVectorExpr<E>& u, const S& v)                                          \
+            : _u(u)                                                                                    \
+            , _v(v) {}                                                                                 \
+                                                                                                       \
+        template <typename TAG>                                                                        \
+        auto operator()(size_t i, TAG tag) const { return _u(i, tag) _Op _v; }                         \
+        template <typename TAG>                                                                        \
+        auto  size(TAG tag) const { return _u.size(tag); }                                             \
+        auto& head() const { return _u.head(); }                                                       \
+        auto& other() const { return _u.other(); }                                                     \
+        auto& tail() const { return _u.tail(); }                                                       \
+        auto& dinfo() const { return _u.dinfo(); }                                                     \
+    };                                                                                                 \
+                                                                                                       \
+    template <typename E, typename S, typename std::enable_if<std::is_arithmetic_v<S>, int>::type = 0> \
+    DVector##_OpName<E, S> operator _Op(const DVectorExpr<E>& u, const S& v) {                         \
+        return { u, v };                                                                               \
+    }                                                                                                  \
+                                                                                                       \
+    template <typename E, typename S, typename std::enable_if<std::is_arithmetic_v<S>, int>::type = 0> \
+    DVector##_OpName<E, S> operator _Op(const S& v, const DVectorExpr<E>& u) {                         \
+        return { u, v };                                                                               \
     }
 
 _DEFINE_MULDIV_OPERATOR(*, Mul)
@@ -324,7 +320,7 @@ _DEFINE_MULDIV_OPERATOR(/, Div)
                                                                             \
     public:                                                                 \
         DVector##_OpName(const DVectorExpr<E1>& u,                          \
-            const DVectorExpr<E2>&              v)                          \
+                         const DVectorExpr<E2>& v)                          \
             : _u(u)                                                         \
             , _v(v) {                                                       \
             assert(u.size(TAG_HEAD()) == v.size(TAG_HEAD()));               \

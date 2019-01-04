@@ -1,6 +1,7 @@
 #pragma once
 #include "mpi.h"
 #include <array>
+#include <cstddef>
 
 #include "dinfo.hpp"
 #include "dvector.hpp"
@@ -9,18 +10,13 @@ namespace ParK {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Forward declaration
-template <
-    typename OP,
-    typename X,
-    std::size_t NBORDER>
+template <typename X, std::size_t NBORDER, typename OP>
 struct DMatVec;
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Class for a distribute matrix with bidiagonal, block cyclic structure
-template <
-    typename OPER,
-    typename X,
-    std::size_t NBORDER>
+// Class for a distributed matrix with bidiagonal, block cyclic structure,
+// with right and bottom bordering vectors.
+template <typename X, std::size_t NBORDER, typename OPER>
 class DMatrix {
 private:
     DMatrixBandType _btype;
@@ -41,7 +37,9 @@ public:
     //     : _isupper(isupper), _dinfo(comm), _op(op), _rborder(rborder), _dborder(dborder) {}
 
     // provide an optional constructor when NBORDER = 0
-    DMatrix(MPI_Comm comm, const OPER& oper, DMatrixBandType btype)
+    DMatrix(MPI_Comm        comm,
+            const OPER&     oper,
+            DMatrixBandType btype)
         : _btype(btype)
         , _dinfo(comm)
         , _oper(oper) {
@@ -79,9 +77,9 @@ template <
     std::size_t NBORDER>
 struct DMatVec {
     ////////////////////////////////////////////////////////////////
-    // members
+    // Members
     const DMatrix<OPER, X, NBORDER>& _dmat;
-    DVector<X, NBORDER>&             _x;
+    const DVector<X, NBORDER>&       _x;
 
     ////////////////////////////////////////////////////////////////
     // actually executes y = A*x
@@ -103,10 +101,9 @@ struct DMatVec {
         // an identity matrix with the dostrivuted vector
         _y.head() = _y.head() - _x.other();
 
-        // now broadcast the tail from the last rank with id=comm_size-1
-        // WHY???
-        MPI_Bcast(_x.tail().data(), NBORDER, MPI_DOUBLE,
-            _dmat.dinfo().size() - 1, _dmat.dinfo().comm());
+        // now broadcast the tail from the last rank with id=comm_size-1 to all procs
+        // because we need it to include the right bordering vectors in the
+        MPI_Bcast(_x.tail().data(), NBORDER, MPI_DOUBLE, _dmat.dinfo().size() - 1, _dmat.dinfo().comm());
 
         // for (auto i = 0; i != NBORDER; i++)
         // {
@@ -120,4 +117,4 @@ struct DMatVec {
     }
 };
 
-} // namespace PaKr
+} // namespace ParK
