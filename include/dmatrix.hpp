@@ -10,7 +10,7 @@ namespace ParK {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Forward declaration
-template <typename X, std::size_t NBORDER, typename OP>
+template <typename X, std::size_t NBORDER, typename OPER>
 struct DMatVec;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -19,11 +19,15 @@ struct DMatVec;
 template <typename X, std::size_t NBORDER, typename OPER>
 class DMatrix {
 private:
-    DMatrixBandType                  _btype;
-    const DInfo                      _dinfo;
-    const OPER&                      _oper;
-    std::vector<DVector<X, NBORDER>> _rborders;
-    std::vector<DVector<X, NBORDER>> _dborders;
+    // alias
+    using dvector = DVector<X, NBORDER>;
+
+    // members
+    DMatrixBandType      _btype;
+    const DInfo          _dinfo;
+    const OPER&          _oper;
+    std::vector<dvector> _rborders;
+    std::vector<dvector> _dborders;
 
 public:
     // the constructor accepts a communicator, an operator used
@@ -54,7 +58,7 @@ public:
     // used in e.g. a copy assignment operation on a DVector.
     // Note 'x' is not marked const, as we shift the data
     // up or down during the matrix-vector product
-    DMatVec<OPER, X, NBORDER> operator*(DVector<X, NBORDER>& x) const {
+    DMatVec<OPER, X, NBORDER> operator*(dvector& x) const {
         return { *this, x };
     }
 
@@ -65,14 +69,17 @@ public:
     const OPER& oper() const { return _oper; }
 
     const DInfo& dinfo() const { return _dinfo; }
+
+    const dvector& rborder(const std::size_t i) const { return _rborders[i]; }
+    const dvector& dborder(const std::size_t i) const { return _dborders[i]; }
+
+    dvector& rborder(const std::size_t i) { return _rborders[i]; }
+    dvector& dborder(const std::size_t i) { return _dborders[i]; }
 };
 
 ////////////////////////////////////////////////////////////////
 // Lazy matmul object that gets created when we execute A*x
-template <
-    typename OPER,
-    typename X,
-    std::size_t NBORDER>
+template <typename X, std::size_t NBORDER, typename OPER>
 struct DMatVec {
     ////////////////////////////////////////////////////////////////
     // Members
