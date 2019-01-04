@@ -28,7 +28,7 @@ private:
 public:
     // the constructor accepts a communicator, an operator used
     // to compute the diagonal submatrix/subvector products and
-    // a distributed array, which is used to constructor the 
+    // a distributed array, which is used to constructor the
     // bordering vectors by creating copies of it.
     DMatrix(MPI_Comm            comm,
             const OPER&         oper,
@@ -60,17 +60,11 @@ public:
 
     ////////////////////////////////////////////////////////////////
     // field accessors
-    const DMatrixBandType btype() const {
-        return _btype;
-    }
+    const DMatrixBandType btype() const { return _btype; }
 
-    const OPER& oper() const {
-        return _oper;
-    }
+    const OPER& oper() const { return _oper; }
 
-    const DInfo& dinfo() const {
-        return _dinfo;
-    }
+    const DInfo& dinfo() const { return _dinfo; }
 };
 
 ////////////////////////////////////////////////////////////////
