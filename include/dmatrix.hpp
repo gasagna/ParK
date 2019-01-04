@@ -101,23 +101,22 @@ struct DMatVec {
         // wait for the transfer to finish
         _x.shift_wait();
 
-        // then add other diagonal which the product of
-        // an identity matrix with the dostrivuted vector
+        // then add other diagonal which is the product of
+        // an identity matrix with the distributed vector
         _y.head() = _y.head() - _x.other();
 
         // now broadcast the tail from the last rank with id=comm_size-1 to all procs
         // because we need it to include the right bordering vectors in the
         MPI_Bcast(_x.tail().data(), NBORDER, MPI_DOUBLE, _dmat.dinfo().size() - 1, _dmat.dinfo().comm());
 
-        // for (auto i = 0; i != NBORDER; i++)
-        // {
-        //     // and add terms due to the right bordering vectors
-        //     _y.local() += _dmat._rborder[i].local() * _x.tail()[i];
+        for (auto i = 0; i != NBORDER; i++) {
+            // add terms due to the right bordering vectors
+            _y.head() += _dmat.rborder(i).head() * _x.tail(i);
 
-        //     // calculate dot product with lower bordering vector. This gets sent
-        //     // to every rank, including the last one (which is where we need it)
-        //     _y.tail[i] = _dmat._dborder[i] * _x;
-        // }
+            // calculate dot product with lower bordering vector. This gets sent
+            // to every rank, including the last one (which is where we need it)
+            _y.tail(i) = _dmat.dborder(i) * _x;
+        }
     }
 };
 
