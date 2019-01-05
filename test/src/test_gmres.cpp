@@ -89,10 +89,10 @@ TEST_CASE("gmres-dvec", "tests") {
     //
     // the same everywhere
 
-    REQUIRE( bd_UP(0, TAG_HEAD()) == 6 );
-    REQUIRE( bd_LO(0, TAG_HEAD()) == 6 );
-    REQUIRE( bd_UP(1, TAG_HEAD()) == 8 );
-    REQUIRE( bd_LO(1, TAG_HEAD()) == 8 );
+    REQUIRE( bd_UP.head(0) == 6 );
+    REQUIRE( bd_LO.head(0) == 6 );
+    REQUIRE( bd_UP.head(1) == 8 );
+    REQUIRE( bd_LO.head(1) == 8 );
 
     // now make a copy of bd and try to get x by solving
     // Ad * x = b

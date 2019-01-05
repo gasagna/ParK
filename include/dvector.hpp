@@ -16,23 +16,10 @@ namespace ParK {
 template <typename X, std::size_t NBORDER, typename OP>
 struct DMatVec;
 
-/***********************************************************************************/
-// Tags for indexing the head, tail and other member of a DVctor
-/***********************************************************************************/
-struct TAG_DVECTOR {};
-struct TAG_HEAD : public TAG_DVECTOR {};
-struct TAG_TAIL : public TAG_DVECTOR {};
-struct TAG_OTHER : public TAG_DVECTOR {};
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Base class for expression templates
 template <typename E>
 struct DVectorExpr {
-
-    template <typename TAG>
-    auto operator()(size_t i, TAG tag) const {
-        return static_cast<const E&>(*this)(i, tag);
-    }
 
     template <typename TAG>
     auto size(TAG tag) const {
@@ -43,6 +30,10 @@ struct DVectorExpr {
     auto& head() const { return static_cast<const E&>(*this).head(); }
     auto& other() const { return static_cast<const E&>(*this).other(); }
     auto& dinfo() const { return static_cast<const E&>(*this).dinfo(); }
+
+    auto& tail(const std::size_t i) const { return static_cast<const E&>(*this).tail(i); }
+    auto& head(const std::size_t i) const { return static_cast<const E&>(*this).head(i); }
+    auto& other(const std::size_t i) const { return static_cast<const E&>(*this).other(i); }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +75,7 @@ public:
     DVector(DMatVec<X, NBORDER, OPER>&& m)
         : _dinfo(m._x.dinfo().comm())
         , _head(similar(m._x.head()))
-        , _other(similar(m._x.other())) {
+        , _other(similar(m._x.head())) {
         m.execute(*this);
     }
 
@@ -93,12 +84,12 @@ public:
     DVector(const DVectorExpr<E>& a)
         : _dinfo(a.dinfo().comm())
         , _head(similar(a.head()))
-        , _other(similar(a.other())) {
+        , _other(similar(a.head())) {
         for (auto i = 0; i != _head.size(); i++)
-            _head[i] = a(i, TAG_HEAD());
+            _head[i] = a.head(i);
 
         for (auto i = 0; i != _tail.size(); i++)
-            _tail[i] = a(i, TAG_TAIL());
+            _tail[i] = a.tail(i);
 
         // we do not initialised 'other', and require an explicit 'shift' to move data.
     }
@@ -118,10 +109,10 @@ public:
     template <typename E>                                        \
     DVector<X, NBORDER>& operator _Op(const DVectorExpr<E>& a) { \
         for (auto i = 0; i != _head.size(); i++)                 \
-            _head[i] _Op a(i, TAG_HEAD());                       \
+            _head[i] _Op a.head(i);                              \
                                                                  \
         for (auto i = 0; i != _tail.size(); i++)                 \
-            _tail[i] _Op a(i, TAG_TAIL());                       \
+            _tail[i] _Op a.tail(i);                              \
                                                                  \
         return *this;                                            \
     }
@@ -163,27 +154,26 @@ public:
     }
 
     /***********************************************************************************/
-    // Indexing and size
+    // Field accessors and Indexing
     /***********************************************************************************/
+    // Accessors
+#define _DEFINE_ACCESSOR_OPERATOR(_Member)             \
+    const auto& _Member() const { return _##_Member; } \
+    auto&       _Member() { return _##_Member; }
 
-    // Indexing is performed via the () operator. We pass a second argument, a tag that
-    // specifies the part of the vector we want to index, i.e. the head or the tail.
-#define _DEFINE_FUNCTION_OPERATOR(_ARG, _field, _Mod)     \
-    _Mod auto& operator()(size_t i, TAG##_ARG tag) _Mod { \
-        return _field[i];                                 \
-    }
+    _DEFINE_ACCESSOR_OPERATOR(head)
+    _DEFINE_ACCESSOR_OPERATOR(tail)
+    _DEFINE_ACCESSOR_OPERATOR(other)
+    _DEFINE_ACCESSOR_OPERATOR(dinfo)
+#undef _DEFINE_ACCESSOR_OPERATOR
 
-    _DEFINE_FUNCTION_OPERATOR(_HEAD, _head, const)
-    _DEFINE_FUNCTION_OPERATOR(_HEAD, _head, )
-    _DEFINE_FUNCTION_OPERATOR(_TAIL, _tail, const)
-    _DEFINE_FUNCTION_OPERATOR(_TAIL, _tail, )
-    _DEFINE_FUNCTION_OPERATOR(_OTHER, _other, const)
-    _DEFINE_FUNCTION_OPERATOR(_OTHER, _other, )
-#undef _DEFINE_FUNCTION_OPERATOR
-
-    size_t size(TAG_HEAD tag) const { return _head.size(); }
-    size_t size(TAG_TAIL tag) const { return _tail.size(); }
-    size_t size(TAG_OTHER tag) const { return _other.size(); }
+    // Indexing of head and tail is performed as x.head(i) and x.tail(i)
+    auto&       head(const std::size_t i) { return _head[i]; }
+    auto&       tail(const std::size_t i) { return _tail[i]; }
+    auto&       other(const std::size_t i) { return _other[i]; }
+    const auto& head(const std::size_t i) const { return _head[i]; }
+    const auto& tail(const std::size_t i) const { return _tail[i]; }
+    const auto& other(const std::size_t i) const { return _other[i]; }
 
     /***********************************************************************************/
     // MPI communication stuff
@@ -212,19 +202,6 @@ public:
         shift_init(btype);
         shift_wait();
     }
-
-/***********************************************************************************/
-// Field accessors
-/***********************************************************************************/
-#define _DEFINE_ACCESSOR_OPERATOR(_Member)             \
-    const auto& _Member() const { return _##_Member; } \
-    auto&       _Member() { return _##_Member; }
-
-    _DEFINE_ACCESSOR_OPERATOR(head)
-    _DEFINE_ACCESSOR_OPERATOR(tail)
-    _DEFINE_ACCESSOR_OPERATOR(other)
-    _DEFINE_ACCESSOR_OPERATOR(dinfo)
-#undef _DEFINE_ACCESSOR_OPERATOR
 };
 
 /***********************************************************************************/
@@ -282,14 +259,12 @@ auto norm(const DVector<X, NBORDER>& y) {
             : _u(u)                                                                                    \
             , _v(v) {}                                                                                 \
                                                                                                        \
-        template <typename TAG>                                                                        \
-        auto operator()(size_t i, TAG tag) const { return _u(i, tag) _Op _v; }                         \
-        template <typename TAG>                                                                        \
-        auto  size(TAG tag) const { return _u.size(tag); }                                             \
-        auto& head() const { return _u.head(); }                                                       \
-        auto& other() const { return _u.other(); }                                                     \
-        auto& tail() const { return _u.tail(); }                                                       \
         auto& dinfo() const { return _u.dinfo(); }                                                     \
+        auto& head() const { return _u.head(); }                                                       \
+        auto& tail() const { return _u.tail(); }                                                       \
+        auto& other(const std::size_t i) const { return _u.other(i); }                                 \
+        auto& head(const std::size_t i) const { return _u.head(i); }                                   \
+        auto& tail(const std::size_t i) const { return _u.tail(i); }                                   \
     };                                                                                                 \
                                                                                                        \
     template <typename E, typename S, typename std::enable_if<std::is_arithmetic_v<S>, int>::type = 0> \
@@ -319,20 +294,13 @@ _DEFINE_MULDIV_OPERATOR(/, Div)
         DVector##_OpName(const DVectorExpr<E1>& u,                          \
                          const DVectorExpr<E2>& v)                          \
             : _u(u)                                                         \
-            , _v(v) {                                                       \
-            assert(u.size(TAG_HEAD()) == v.size(TAG_HEAD()));               \
-            assert(u.size(TAG_TAIL()) == v.size(TAG_TAIL()));               \
-        }                                                                   \
-        template <typename TAG>                                             \
-        auto operator()(size_t i, TAG tag) const {                          \
-            return _u(i, tag) _Op _v(i, tag);                               \
-        }                                                                   \
-        template <typename TAG>                                             \
-        auto  size(TAG tag) const { return _u.size(tag); }                  \
-        auto& head() const { return _u.head(); }                            \
-        auto& other() const { return _u.other(); }                          \
-        auto& tail() const { return _u.tail(); }                            \
+            , _v(v) {}                                                      \
         auto& dinfo() const { return _u.dinfo(); }                          \
+        auto& head() const { return _u.head(); }                            \
+        auto& tail() const { return _u.tail(); }                            \
+        auto& head(const std::size_t i) const { return _u.head(i); }        \
+        auto& other(const std::size_t i) const { return _u.other(i); }      \
+        auto& tail(const std::size_t i) const { return _u.tail(i); }        \
     };                                                                      \
                                                                             \
     template <typename E1, typename E2>                                     \

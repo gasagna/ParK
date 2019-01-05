@@ -73,8 +73,8 @@ public:
     // add bounds checking here, to avois surprises
     const dvector& rborder(const std::size_t i) const { return _rborders.at(i); }
     const dvector& dborder(const std::size_t i) const { return _dborders.at(i); }
-    dvector& rborder(const std::size_t i) { return _rborders.at(i); }
-    dvector& dborder(const std::size_t i) { return _dborders.at(i); }
+    dvector&       rborder(const std::size_t i) { return _rborders.at(i); }
+    dvector&       dborder(const std::size_t i) { return _dborders.at(i); }
 };
 
 ////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ struct DMatVec {
     ////////////////////////////////////////////////////////////////
     // Members
     const DMatrix<X, NBORDER, OPER>& _dmat;
-    const DVector<X, NBORDER>&       _x;
+    DVector<X, NBORDER>&             _x;
 
     ////////////////////////////////////////////////////////////////
     // actually executes y = A*x

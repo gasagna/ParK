@@ -37,23 +37,23 @@ TEST_CASE("DVector", "tests") {
     SECTION("check data") {
         // exec shift upwards
         a.shift(DMatrixBandType::UPPER);
-        REQUIRE(a(0, TAG_HEAD()) == this_rank);
-        REQUIRE(a(1, TAG_HEAD()) == this_rank + 1);
+        REQUIRE(a.head(0) == this_rank);
+        REQUIRE(a.head(1) == this_rank + 1);
         int next_rank = (this_rank + 1 + comm_size) % comm_size;
-        REQUIRE(a(0, TAG_OTHER()) == next_rank);
-        REQUIRE(a(1, TAG_OTHER()) == next_rank + 1);
-        REQUIRE(a(0, TAG_TAIL()) == this_rank + 2);
+        REQUIRE(a.other(0) == next_rank);
+        REQUIRE(a.other(1) == next_rank + 1);
+        REQUIRE(a.tail(0) == this_rank + 2);
     }
 
     SECTION("check data") {
         // exec shift downwards
         a.shift(DMatrixBandType::LOWER);
-        REQUIRE(a(0, TAG_HEAD()) == this_rank);
-        REQUIRE(a(1, TAG_HEAD()) == this_rank + 1);
+        REQUIRE(a.head(0) == this_rank);
+        REQUIRE(a.head(1) == this_rank + 1);
         int next_rank = (this_rank - 1 + comm_size) % comm_size;
-        REQUIRE(a(0, TAG_OTHER()) == next_rank);
-        REQUIRE(a(1, TAG_OTHER()) == next_rank + 1);
-        REQUIRE(a(0, TAG_TAIL()) == this_rank + 2);
+        REQUIRE(a.other(0) == next_rank);
+        REQUIRE(a.other(1) == next_rank + 1);
+        REQUIRE(a.tail(0) == this_rank + 2);
     }
 
     SECTION("check norm and dot product") {
@@ -64,9 +64,9 @@ TEST_CASE("DVector", "tests") {
 
     SECTION("copy constructor from DVector") {
         DVector<X, 1> c = b;
-        REQUIRE(c(0, TAG_HEAD()) == b(0, TAG_HEAD()));
-        REQUIRE(c(1, TAG_HEAD()) == b(1, TAG_HEAD()));
-        REQUIRE(c(0, TAG_TAIL()) == b(0, TAG_TAIL()));
+        REQUIRE(c.head(0) == b.head(0));
+        REQUIRE(c.head(1) == b.head(1));
+        REQUIRE(c.tail(0) == b.tail(0));
         REQUIRE(c.dinfo().rank() == b.dinfo().rank());
         REQUIRE(c.dinfo().comm() == b.dinfo().comm());
         REQUIRE(c.dinfo().size() == b.dinfo().size());
@@ -74,9 +74,9 @@ TEST_CASE("DVector", "tests") {
 
     SECTION("copy constructor from DVectorExpr") {
         DVector<X, 1> d = 3 * b + a * 2 - a / 2;
-        REQUIRE(d(0, TAG_HEAD()) == 3 * b(0, TAG_HEAD()) + a(0, TAG_HEAD()) * 2 - a(0, TAG_HEAD()) / 2);
-        REQUIRE(d(1, TAG_HEAD()) == 3 * b(1, TAG_HEAD()) + a(1, TAG_HEAD()) * 2 - a(1, TAG_HEAD()) / 2);
-        REQUIRE(d(0, TAG_TAIL()) == 3 * b(0, TAG_TAIL()) + a(0, TAG_TAIL()) * 2 - a(0, TAG_TAIL()) / 2);
+        REQUIRE(d.head(0) == 3 * b.head(0) + a.head(0) * 2 - a.head(0) / 2);
+        REQUIRE(d.head(1) == 3 * b.head(1) + a.head(1) * 2 - a.head(1) / 2);
+        REQUIRE(d.tail(0) == 3 * b.tail(0) + a.tail(0) * 2 - a.tail(0) / 2);
         REQUIRE(d.dinfo().rank() == b.dinfo().rank());
         REQUIRE(d.dinfo().comm() == b.dinfo().comm());
         REQUIRE(d.dinfo().size() == b.dinfo().size());
@@ -85,38 +85,38 @@ TEST_CASE("DVector", "tests") {
     SECTION("in place assignment from DVectorExpr") {
         DVector<X, 1> d_add  = a;
                       d_add += a;
-        REQUIRE(d_add(0, TAG_HEAD()) == 2*a(0, TAG_HEAD()));
-        REQUIRE(d_add(1, TAG_HEAD()) == 2*a(1, TAG_HEAD()));
-        REQUIRE(d_add(0, TAG_TAIL()) == 2*a(0, TAG_TAIL()));
+        REQUIRE(d_add.head(0) == 2*a.head(0));
+        REQUIRE(d_add.head(1) == 2*a.head(1));
+        REQUIRE(d_add.tail(0) == 2*a.tail(0));
 
         DVector<X, 1> d_sub  = a;
                       d_sub -= a;
-        REQUIRE(d_sub(0, TAG_HEAD()) == 0);
-        REQUIRE(d_sub(1, TAG_HEAD()) == 0);
-        REQUIRE(d_sub(0, TAG_TAIL()) == 0);
+        REQUIRE(d_sub.head(0) == 0);
+        REQUIRE(d_sub.head(1) == 0);
+        REQUIRE(d_sub.tail(0) == 0);
 
         DVector<X, 1> d_mul  = a;
                       d_mul *= 2;
-        REQUIRE(d_mul(0, TAG_HEAD()) == 2*a(0, TAG_HEAD()));
-        REQUIRE(d_mul(1, TAG_HEAD()) == 2*a(1, TAG_HEAD()));
-        REQUIRE(d_mul(0, TAG_TAIL()) == 2*a(0, TAG_TAIL()));
+        REQUIRE(d_mul.head(0) == 2*a.head(0));
+        REQUIRE(d_mul.head(1) == 2*a.head(1));
+        REQUIRE(d_mul.tail(0) == 2*a.tail(0));
 
         DVector<X, 1> d_div  = a;
                       d_div /= 2;
-        REQUIRE(d_div(0, TAG_HEAD()) == 0.5*a(0, TAG_HEAD()));
-        REQUIRE(d_div(1, TAG_HEAD()) == 0.5*a(1, TAG_HEAD()));
-        REQUIRE(d_div(0, TAG_TAIL()) == 0.5*a(0, TAG_TAIL()));
+        REQUIRE(d_div.head(0) == 0.5*a.head(0));
+        REQUIRE(d_div.head(1) == 0.5*a.head(1));
+        REQUIRE(d_div.tail(0) == 0.5*a.tail(0));
     }
 
     SECTION("DVector makes a copy of the data") {
         X             data = { 1, 2 };
         int           tail = 0;
         DVector<X, 1> d(MPI_COMM_WORLD, data, tail);
-        d(0, TAG_HEAD()) = 5;
-        d(0, TAG_TAIL()) = 6;
+        d.head(0) = 5;
+        d.tail(0) = 6;
         
-        REQUIRE(d(0, TAG_HEAD()) == 5);
-        REQUIRE(d(0, TAG_TAIL()) == 6);
+        REQUIRE(d.head(0) == 5);
+        REQUIRE(d.tail(0) == 6);
         
         REQUIRE(tail == 0);
         REQUIRE(data[0] == 1);
