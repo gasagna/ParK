@@ -70,11 +70,11 @@ public:
 
     const DInfo& dinfo() const { return _dinfo; }
 
-    const dvector& rborder(const std::size_t i) const { return _rborders[i]; }
-    const dvector& dborder(const std::size_t i) const { return _dborders[i]; }
-
-    dvector& rborder(const std::size_t i) { return _rborders[i]; }
-    dvector& dborder(const std::size_t i) { return _dborders[i]; }
+    // add bounds checking here, to avois surprises
+    const dvector& rborder(const std::size_t i) const { return _rborders.at(i); }
+    const dvector& dborder(const std::size_t i) const { return _dborders.at(i); }
+    dvector& rborder(const std::size_t i) { return _rborders.at(i); }
+    dvector& dborder(const std::size_t i) { return _dborders.at(i); }
 };
 
 ////////////////////////////////////////////////////////////////
