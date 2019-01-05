@@ -93,7 +93,7 @@ TEST_CASE("DMatrix", "tests") {
     }
 
     SECTION("with borders") {
-        SECTION("lower band") {
+        SECTION("one border") {
             // make a copy, where we will store the output
             Vec data_out = data_in;
 
@@ -109,7 +109,7 @@ TEST_CASE("DMatrix", "tests") {
                                    DMatrixBandType::LOWER,
                                    y);
 
-            // fill borders. NOte we need to fill the tail too!
+            // fill borders. Note we need to fill the tail too!
             A.dborder(0).head()  = this_rank;
             A.rborder(0).head()  = this_rank + 1;
             A.dborder(0).tail(0) = 0;

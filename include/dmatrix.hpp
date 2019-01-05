@@ -35,15 +35,24 @@ public:
     // to compute the diagonal submatrix/subvector products and
     // a distributed array, which is used to constructor the
     // bordering vectors by creating copies of it.
-    DMatrix(MPI_Comm            comm,
-            const OPER&         oper,
-            DMatrixBandType     btype,
+    DMatrix(MPI_Comm                   comm,
+            const OPER&                oper,
+            DMatrixBandType            btype,
             const DVector<X, NBORDER>& seed)
         : _btype(btype)
         , _dinfo(comm)
         , _oper(oper)
         , _rborders(NBORDER, seed)
-        , _dborders(NBORDER, seed) {}
+        , _dborders(NBORDER, seed) {
+
+        // after copying the borders set everything to zero for safety
+        for (auto i = 0; i != NBORDER; i++) {
+            _rborders[i].head() = 0;
+            _dborders[i].head() = 0;
+            _rborders[i].tail().fill(0);
+            _dborders[i].tail().fill(0);
+        }
+    }
 
     // provide an optional constructor when NBORDER = 0
     DMatrix(MPI_Comm        comm,
