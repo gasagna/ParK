@@ -179,6 +179,15 @@ public:
     // MPI communication stuff
     /***********************************************************************************/
 
+    // Broadcast the tail from the last rank with id=comm_size-1 to all procs
+    void bc_tail() {
+        MPI_Bcast(_tail.data(),
+                  NBORDER,
+                  MPI_DOUBLE,
+                  _dinfo.size() - 1,
+                  _dinfo.comm());
+    }
+
     // Begin non-blocking chain shift operation across one dimensional chain of processes.
     // This should be followed by a 'shift_wait'
     void shift_init(const DMatrixBandType btype) {
@@ -188,8 +197,20 @@ public:
         // we need to take care of the boundaries, so we use modulo arithmetic
         int dir = btype == DMatrixBandType::UPPER ? 1 : -1;
         // FIXME: make this type generic
-        MPI_Irecv(_other.data(), _other.size(), MPI_DOUBLE, (_dinfo.rank() + dir + _dinfo.size()) % _dinfo.size(), 0, _dinfo.comm(), &_requests[0]);
-        MPI_Isend(_head.data(), _head.size(), MPI_DOUBLE, (_dinfo.rank() - dir + _dinfo.size()) % _dinfo.size(), 0, _dinfo.comm(), &_requests[1]);
+        MPI_Irecv(_other.data(),
+                  _other.size(),
+                  MPI_DOUBLE,
+                  (_dinfo.rank() + dir + _dinfo.size()) % _dinfo.size(),
+                  0,
+                  _dinfo.comm(),
+                  &_requests[0]);
+        MPI_Isend(_head.data(),
+                  _head.size(),
+                  MPI_DOUBLE,
+                  (_dinfo.rank() - dir + _dinfo.size()) % _dinfo.size(),
+                  0,
+                  _dinfo.comm(),
+                  &_requests[1]);
     }
 
     // wait until all shifts have been processed

@@ -121,4 +121,12 @@ TEST_CASE("DVector", "tests") {
         REQUIRE(tail == 0);
         REQUIRE(data[0] == 1);
     }
+    SECTION("broadcast tail") {
+        X             data = { 1, 2 };
+        int           tail = this_rank;
+        DVector<X, 1> d(MPI_COMM_WORLD, data, tail);
+        d.tail(0) = this_rank;
+        d.bc_tail();
+        REQUIRE(d.tail(0) == comm_size - 1);
+    }
 }

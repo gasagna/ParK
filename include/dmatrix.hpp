@@ -106,9 +106,10 @@ struct DMatVec {
         // an identity matrix with the distributed vector
         _y.head() = _y.head() - _x.other();
 
-        // now broadcast the tail from the last rank with id=comm_size-1 to all procs
-        // because we need it to include the right bordering vectors in the
-        MPI_Bcast(_x.tail().data(), NBORDER, MPI_DOUBLE, _dmat.dinfo().size() - 1, _dmat.dinfo().comm());
+        // now broadcast the tail from the last rank before the calcs
+        // with the right bordering vectors. Maybe replace with RMA
+        // in the tail(size_t) call
+        _x.bc_tail();
 
         for (auto i = 0; i != NBORDER; i++) {
             // add terms due to the right bordering vectors
