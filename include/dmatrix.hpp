@@ -37,7 +37,7 @@ public:
     DMatrix(MPI_Comm            comm,
             const OPER&         oper,
             DMatrixBandType     btype,
-            DVector<X, NBORDER> seed)
+            const DVector<X, NBORDER>& seed)
         : _btype(btype)
         , _dinfo(comm)
         , _oper(oper)
