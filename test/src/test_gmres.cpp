@@ -57,8 +57,8 @@ TEST_CASE("gmres-dvec", "tests") {
 
     // define local and global matrix
     Mat A = {{1, 2, 3, 4}, 2};
-    DMatrix<Mat, Vec, 0> Ad_UP(MPI_COMM_WORLD, A, DMatrixBandType::UPPER);
-    DMatrix<Mat, Vec, 0> Ad_LO(MPI_COMM_WORLD, A, DMatrixBandType::LOWER);
+    DMatrix<Vec, 0, Mat> Ad_UP(MPI_COMM_WORLD, A, DMatrixBandType::UPPER);
+    DMatrix<Vec, 0, Mat> Ad_LO(MPI_COMM_WORLD, A, DMatrixBandType::LOWER);
 
     // now define the exact solution, locally, and globally
     Vec x = {1, 2};

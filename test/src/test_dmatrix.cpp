@@ -40,7 +40,7 @@ TEST_CASE("DMatrix", "tests") {
         DVector<Vec, 0> y = x;
 
         // define a distributed matrix
-        DMatrix<int, Vec, 0> A(MPI_COMM_WORLD, this_rank, DMatrixBandType::LOWER);
+        DMatrix<Vec, 0, int> A(MPI_COMM_WORLD, this_rank, DMatrixBandType::LOWER);
 
         // exec product
         //
@@ -69,7 +69,7 @@ TEST_CASE("DMatrix", "tests") {
         DVector<Vec, 0> y = x;
 
         // define a distributed matrix
-        DMatrix<int, Vec, 0> A(MPI_COMM_WORLD, this_rank, DMatrixBandType::UPPER);
+        DMatrix<Vec, 0, int> A(MPI_COMM_WORLD, this_rank, DMatrixBandType::UPPER);
 
         // exec product
         //

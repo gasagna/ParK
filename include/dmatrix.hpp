@@ -58,7 +58,7 @@ public:
     // used in e.g. a copy assignment operation on a DVector.
     // Note 'x' is not marked const, as we shift the data
     // up or down during the matrix-vector product
-    DMatVec<OPER, X, NBORDER> operator*(dvector& x) const {
+    DMatVec<X, NBORDER, OPER> operator*(dvector& x) const {
         return { *this, x };
     }
 
@@ -83,7 +83,7 @@ template <typename X, std::size_t NBORDER, typename OPER>
 struct DMatVec {
     ////////////////////////////////////////////////////////////////
     // Members
-    const DMatrix<OPER, X, NBORDER>& _dmat;
+    const DMatrix<X, NBORDER, OPER>& _dmat;
     const DVector<X, NBORDER>&       _x;
 
     ////////////////////////////////////////////////////////////////
