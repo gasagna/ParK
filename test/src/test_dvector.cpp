@@ -83,29 +83,29 @@ TEST_CASE("DVector", "tests") {
     }
 
     SECTION("in place assignment from DVectorExpr") {
-        DVector<X, 1> d_add  = a;
-                      d_add += a;
-        REQUIRE(d_add.head(0) == 2*a.head(0));
-        REQUIRE(d_add.head(1) == 2*a.head(1));
-        REQUIRE(d_add.tail(0) == 2*a.tail(0));
+        DVector<X, 1> d_add = a;
+        d_add += a;
+        REQUIRE(d_add.head(0) == 2 * a.head(0));
+        REQUIRE(d_add.head(1) == 2 * a.head(1));
+        REQUIRE(d_add.tail(0) == 2 * a.tail(0));
 
-        DVector<X, 1> d_sub  = a;
-                      d_sub -= a;
+        DVector<X, 1> d_sub = a;
+        d_sub -= a;
         REQUIRE(d_sub.head(0) == 0);
         REQUIRE(d_sub.head(1) == 0);
         REQUIRE(d_sub.tail(0) == 0);
 
-        DVector<X, 1> d_mul  = a;
-                      d_mul *= 2;
-        REQUIRE(d_mul.head(0) == 2*a.head(0));
-        REQUIRE(d_mul.head(1) == 2*a.head(1));
-        REQUIRE(d_mul.tail(0) == 2*a.tail(0));
+        DVector<X, 1> d_mul = a;
+        d_mul *= 2;
+        REQUIRE(d_mul.head(0) == 2 * a.head(0));
+        REQUIRE(d_mul.head(1) == 2 * a.head(1));
+        REQUIRE(d_mul.tail(0) == 2 * a.tail(0));
 
-        DVector<X, 1> d_div  = a;
-                      d_div /= 2;
-        REQUIRE(d_div.head(0) == 0.5*a.head(0));
-        REQUIRE(d_div.head(1) == 0.5*a.head(1));
-        REQUIRE(d_div.tail(0) == 0.5*a.tail(0));
+        DVector<X, 1> d_div = a;
+        d_div /= 2;
+        REQUIRE(d_div.head(0) == 0.5 * a.head(0));
+        REQUIRE(d_div.head(1) == 0.5 * a.head(1));
+        REQUIRE(d_div.tail(0) == 0.5 * a.tail(0));
     }
 
     SECTION("DVector makes a copy of the data") {
@@ -114,10 +114,10 @@ TEST_CASE("DVector", "tests") {
         DVector<X, 1> d(MPI_COMM_WORLD, data, tail);
         d.head(0) = 5;
         d.tail(0) = 6;
-        
+
         REQUIRE(d.head(0) == 5);
         REQUIRE(d.tail(0) == 6);
-        
+
         REQUIRE(tail == 0);
         REQUIRE(data[0] == 1);
     }

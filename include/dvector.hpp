@@ -283,9 +283,9 @@ auto norm(const DVector<X, NBORDER>& y) {
         auto& dinfo() const { return _u.dinfo(); }                                                     \
         auto& head() const { return _u.head(); }                                                       \
         auto& tail() const { return _u.tail(); }                                                       \
-        auto other(const std::size_t i) const { return _u.other(i) _Op _v; }                          \
-        auto head(const std::size_t i) const { return _u.head(i) _Op _v; }                            \
-        auto tail(const std::size_t i) const { return _u.tail(i) _Op _v; }                            \
+        auto  other(const std::size_t i) const { return _u.other(i) _Op _v; }                          \
+        auto  head(const std::size_t i) const { return _u.head(i) _Op _v; }                            \
+        auto  tail(const std::size_t i) const { return _u.tail(i) _Op _v; }                            \
     };                                                                                                 \
                                                                                                        \
     template <typename E, typename S, typename std::enable_if<std::is_arithmetic_v<S>, int>::type = 0> \
@@ -319,9 +319,9 @@ _DEFINE_MULDIV_OPERATOR(/, Div)
         auto& dinfo() const { return _u.dinfo(); }                                     \
         auto& head() const { return _u.head(); }                                       \
         auto& tail() const { return _u.tail(); }                                       \
-        auto head(const std::size_t i) const { return _u.head(i) _Op _v.head(i); }    \
-        auto other(const std::size_t i) const { return _u.other(i) _Op _v.other(i); } \
-        auto tail(const std::size_t i) const { return _u.tail(i) _Op _v.tail(i); }    \
+        auto  head(const std::size_t i) const { return _u.head(i) _Op _v.head(i); }    \
+        auto  other(const std::size_t i) const { return _u.other(i) _Op _v.other(i); } \
+        auto  tail(const std::size_t i) const { return _u.tail(i) _Op _v.tail(i); }    \
     };                                                                                 \
                                                                                        \
     template <typename E1, typename E2>                                                \
