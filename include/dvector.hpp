@@ -31,9 +31,9 @@ struct DVectorExpr {
     auto& other() const { return static_cast<const E&>(*this).other(); }
     auto& dinfo() const { return static_cast<const E&>(*this).dinfo(); }
 
-    auto& tail(const std::size_t i) const { return static_cast<const E&>(*this).tail(i); }
-    auto& head(const std::size_t i) const { return static_cast<const E&>(*this).head(i); }
-    auto& other(const std::size_t i) const { return static_cast<const E&>(*this).other(i); }
+    auto tail(const std::size_t i) const { return static_cast<const E&>(*this).tail(i); }
+    auto head(const std::size_t i) const { return static_cast<const E&>(*this).head(i); }
+    auto other(const std::size_t i) const { return static_cast<const E&>(*this).other(i); }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -262,9 +262,9 @@ auto norm(const DVector<X, NBORDER>& y) {
         auto& dinfo() const { return _u.dinfo(); }                                                     \
         auto& head() const { return _u.head(); }                                                       \
         auto& tail() const { return _u.tail(); }                                                       \
-        auto& other(const std::size_t i) const { return _u.other(i); }                                 \
-        auto& head(const std::size_t i) const { return _u.head(i); }                                   \
-        auto& tail(const std::size_t i) const { return _u.tail(i); }                                   \
+        auto other(const std::size_t i) const { return _u.other(i) _Op _v; }                          \
+        auto head(const std::size_t i) const { return _u.head(i) _Op _v; }                            \
+        auto tail(const std::size_t i) const { return _u.tail(i) _Op _v; }                            \
     };                                                                                                 \
                                                                                                        \
     template <typename E, typename S, typename std::enable_if<std::is_arithmetic_v<S>, int>::type = 0> \
@@ -282,31 +282,31 @@ _DEFINE_MULDIV_OPERATOR(/, Div)
 #undef _DEFINE_MULDIV_OPERATOR
 
 // define linear space operations + and -
-#define _DEFINE_ADDSUB_OPERATOR(_Op, _OpName)                               \
-                                                                            \
-    template <typename E1, typename E2>                                     \
-    class DVector##_OpName : public DVectorExpr<DVector##_OpName<E1, E2>> { \
-    private:                                                                \
-        const DVectorExpr<E1>& _u;                                          \
-        const DVectorExpr<E2>& _v;                                          \
-                                                                            \
-    public:                                                                 \
-        DVector##_OpName(const DVectorExpr<E1>& u,                          \
-                         const DVectorExpr<E2>& v)                          \
-            : _u(u)                                                         \
-            , _v(v) {}                                                      \
-        auto& dinfo() const { return _u.dinfo(); }                          \
-        auto& head() const { return _u.head(); }                            \
-        auto& tail() const { return _u.tail(); }                            \
-        auto& head(const std::size_t i) const { return _u.head(i); }        \
-        auto& other(const std::size_t i) const { return _u.other(i); }      \
-        auto& tail(const std::size_t i) const { return _u.tail(i); }        \
-    };                                                                      \
-                                                                            \
-    template <typename E1, typename E2>                                     \
-    DVector##_OpName<E1, E2>                                                \
-    operator _Op(const DVectorExpr<E1>& u, const DVectorExpr<E2>& v) {      \
-        return { u, v };                                                    \
+#define _DEFINE_ADDSUB_OPERATOR(_Op, _OpName)                                          \
+                                                                                       \
+    template <typename E1, typename E2>                                                \
+    class DVector##_OpName : public DVectorExpr<DVector##_OpName<E1, E2>> {            \
+    private:                                                                           \
+        const DVectorExpr<E1>& _u;                                                     \
+        const DVectorExpr<E2>& _v;                                                     \
+                                                                                       \
+    public:                                                                            \
+        DVector##_OpName(const DVectorExpr<E1>& u,                                     \
+                         const DVectorExpr<E2>& v)                                     \
+            : _u(u)                                                                    \
+            , _v(v) {}                                                                 \
+        auto& dinfo() const { return _u.dinfo(); }                                     \
+        auto& head() const { return _u.head(); }                                       \
+        auto& tail() const { return _u.tail(); }                                       \
+        auto head(const std::size_t i) const { return _u.head(i) _Op _v.head(i); }    \
+        auto other(const std::size_t i) const { return _u.other(i) _Op _v.other(i); } \
+        auto tail(const std::size_t i) const { return _u.tail(i) _Op _v.tail(i); }    \
+    };                                                                                 \
+                                                                                       \
+    template <typename E1, typename E2>                                                \
+    DVector##_OpName<E1, E2>                                                           \
+    operator _Op(const DVectorExpr<E1>& u, const DVectorExpr<E2>& v) {                 \
+        return { u, v };                                                               \
     }
 
 _DEFINE_ADDSUB_OPERATOR(+, Add)
