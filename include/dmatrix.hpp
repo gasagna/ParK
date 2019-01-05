@@ -38,9 +38,9 @@ public:
             const OPER&         oper,
             DMatrixBandType     btype,
             DVector<X, NBORDER> seed)
-        : _isupper(isupper)
+        : _btype(btype)
         , _dinfo(comm)
-        , _op(op)
+        , _oper(oper)
         , _rborders(NBORDER, seed)
         , _dborders(NBORDER, seed) {}
 
