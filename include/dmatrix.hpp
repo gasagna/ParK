@@ -15,7 +15,8 @@ struct DMatVec;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Class for a distributed matrix with bidiagonal, block cyclic structure,
-// with right and bottom bordering vectors.
+// with right and bottom bordering vectors. This assume the bottom right
+// corner is alwasy zero.
 template <typename X, std::size_t NBORDER, typename OPER>
 class DMatrix {
 private:

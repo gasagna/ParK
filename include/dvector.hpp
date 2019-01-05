@@ -41,7 +41,7 @@ private:
     const DInfo                 _dinfo;
     X                           _head;
     X                           _other;
-    std::array<double, NBORDER> _tail;
+    std::array<double, NBORDER> _tail = { 0.0 };
 
 public:
     /***********************************************************************************/
