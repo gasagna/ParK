@@ -21,11 +21,6 @@ struct DMatVec;
 template <typename E>
 struct DVectorExpr {
 
-    template <typename TAG>
-    auto size(TAG tag) const {
-        return static_cast<const E&>(*this).size(tag);
-    }
-
     auto& tail() const { return static_cast<const E&>(*this).tail(); }
     auto& head() const { return static_cast<const E&>(*this).head(); }
     auto& other() const { return static_cast<const E&>(*this).other(); }
