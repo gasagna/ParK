@@ -33,17 +33,25 @@ public:
         // classEigen_1_1PlainObjectBase.html#a712c25be1652e5a64a00f28c8ed11462
         H.conservativeResize(n + 1, n);
 
-        // set to zero the elements we have created, because the
-        // function above leaves them unitialized and the main 
-        // loop below will not cover all of them, because 
-        // it only fills the last column
-        for (auto j = 0; j != n; j++)
-            H(n, j) = 0;
+        // set to zero the last column and last row we have just
+        // created, because the function above leaves them 
+        // unitialized and the main loop below will need 
+        // to make updates to zero
+        for (auto col = 0; col != n; col++)
+            H(n, col) = 0;
+        
+        for (auto row = 0; row != n; row++)
+            H(row, n-1) = 0;
 
-        // create new vector by successive orthogonalisation
-        for (auto j = 0; j != n; j++) {
-            H(j, n - 1) = v * Qs[j];
-            v -= H(j, n - 1) * Qs[j];
+        // create new vector by successive orthogonalisation 
+        // using "two-step" refinement see general notes at
+        // http://slepc.upv.es/documentation/reports/str1.pdf
+        for (auto refine : {1, 2}) {
+            for (auto j = 0; j != n; j++) {
+                double h = v * Qs[j];
+                v = v - h * Qs[j];
+                H(j, n - 1) += h;
+            }
         }
         H(n, n - 1) = norm(v);
         v /= H(n, n - 1);

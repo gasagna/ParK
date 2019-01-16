@@ -3,10 +3,11 @@
 #include "vec.hpp"
 #include <cmath>
 #include <iostream>
+#include <random>
 
 using namespace ParK;
 
-TEST_CASE("arnoldi", "tests") {
+TEST_CASE("arnoldi - general", "tests") {
 
     // define shorthand
     using Vec = Test::Vec<double>;
@@ -64,15 +65,15 @@ TEST_CASE("arnoldi", "tests") {
     expected -= arnit.Qs[3];
     REQUIRE(norm(expected) < 1e-14);
 
-    REQUIRE(fabs(arnit.H(0, 0) - 36.86666666666666) < 1e-14);
+    REQUIRE(fabs(arnit.H(0, 0) - 36.86666666666666)  < 1e-14);
     REQUIRE(fabs(arnit.H(1, 0) - 11.128741568069987) < 1e-14);
     REQUIRE(fabs(arnit.H(2, 0) - 0.0) < 1e-14);
     REQUIRE(fabs(arnit.H(3, 0) - 0.0) < 1e-14);
-    REQUIRE(fabs(arnit.H(0, 1) + 1.3734207368331421) < 1e-14);
+    REQUIRE(fabs(arnit.H(0, 1) + 1.3734207368331421) < 1e-13);
     REQUIRE(fabs(arnit.H(1, 1) + 1.6776908538481745) < 1e-14);
     REQUIRE(fabs(arnit.H(2, 1) - 1.9804529365004642) < 1e-14);
     REQUIRE(fabs(arnit.H(3, 1) - 0.0) < 1e-14);
-    REQUIRE(fabs(arnit.H(0, 2) + 1.3690518077906155) < 1e-14);
+    REQUIRE(fabs(arnit.H(0, 2) + 1.3690518077906155) < 1e-13);
     REQUIRE(fabs(arnit.H(1, 2) - 0.0770259326323658) < 1e-14);
     REQUIRE(fabs(arnit.H(2, 2) - 0.4815501434404343) < 1e-14);
     REQUIRE(fabs(arnit.H(3, 2) - 0.9887157600533213) < 1e-14);
@@ -91,4 +92,51 @@ TEST_CASE("arnoldi", "tests") {
     Vec coeffs_2     = { 1, 3, 4, 5 };
     REQUIRE_THROWS( arnit.lincomb(v, coeffs_1) );
     REQUIRE_THROWS( arnit.lincomb(v, coeffs_2) );
+}
+
+TEST_CASE("arnoldi - orthogonality", "tests") {
+
+    // define shorthand
+    using Vec = Test::Vec<double>;
+    using Mat = Test::SqMat<double>;
+
+    // size
+    int N = 100;
+
+    // define some data
+    Vec x(N);
+    Mat A(N);
+
+    std::random_device         rd{};
+    std::mt19937               gen{ rd() };
+    std::normal_distribution<> d{ 0, 1 };
+
+    for (int i = 0; i != N; i++) {
+        x(i) = d(gen);
+        for (int j = 0; j != N; j++) {
+            A(i, j) = 0.5*d(gen)/std::sqrt(N);
+            if (i == j)
+                A(i, j) += 1.0;
+        }
+    }
+
+    // define arnoldi iteration object
+    auto arnit = ArnoldiCache(A, x);
+
+    // add vectors
+    for (int i = 0; i != N-1; i++) {
+        arnit.update();
+    }
+    
+    // check orthogonality
+    for (int i = 0; i != N; i++) {
+        for (int j = 0; j != N; j++) {
+            double dotprod = arnit.Qs[i] * arnit.Qs[j];
+            if (i == j) {
+                REQUIRE( std::fabs( dotprod - 1.0 ) < 2e-15 );
+            } else {
+                REQUIRE( std::fabs( dotprod  ) < 2e-15 );
+            }
+        }
+    }
 }
