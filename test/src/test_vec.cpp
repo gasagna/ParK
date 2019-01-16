@@ -27,6 +27,14 @@ TEST_CASE("Vec", "tests") {
 
     d += a + 2 * b;
     REQUIRE(d[0] == a[0] + b[0] * 2 + c[0] / 6 + a[0] + 2 * b[0]);
+
+    // dot product and norm
+    Vec x = { 1.0, 3.0 };
+    Vec y = { 2.0, 4.0 };
+
+    REQUIRE(x * y == 14.0);
+    REQUIRE(norm(x) == std::sqrt(1*1 + 3*3));
+    REQUIRE(norm(y) == std::sqrt(2*2 + 4*4));
 }
 
 TEST_CASE("MatVec", "tests") {
