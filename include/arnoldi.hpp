@@ -16,7 +16,8 @@ public:
         : mat(_mat) {
         // make a first vector
         VEC q1 = v / norm(v);
-        Qs.push_back(q1);
+        // which we move into 'Qs', since we do not need it here anymore
+        Qs.push_back(std::move(q1));
     }
 
     // update the arnoldi vectors
@@ -46,7 +47,7 @@ public:
         }
         H(n, n - 1) = norm(v);
         v /= H(n, n - 1);
-        Qs.push_back(v);
+        Qs.push_back(std::move(v));
     }
 
     // Overwrite the vector 'v' with a linear combination of the
