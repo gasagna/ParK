@@ -304,7 +304,7 @@ public:
     }
 
     // from the size and a value
-    SqMat(std::size_t n, T val)
+    SqMat(std::size_t n, T val = T())
         : _data(n * n, val)
         , _n(n) {
     }
