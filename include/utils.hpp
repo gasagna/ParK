@@ -8,13 +8,13 @@ double der(F&& f, double x, double epsilon) {
     return (f(x + epsilon) - f(x - epsilon)) / (2 * epsilon);
 }
 
-// bare bones newton-raphson implementation
+// bare bones newton-raphson algorithm 
 template <typename F>
-double fzero(F&&          f,              // function we wish to find a zero of
-             double       x,              // initial guess
-             const double ftol    = 1e-4, // tolerances and iteration parameters
-             const double xtol    = 1e-4, //
-             const int    maxiter = 10,   //
+double fzero(F&&          f,               // function we wish to find a zero of
+             double       x,               // initial guess
+             const double ftol    = 1e-14, // tolerances and iteration parameters
+             const double xtol    = 1e-14, //
+             const int    maxiter = 20,    //
              double       epsilon = 1e-6) {     // step for derivative approximation
 
     for (int iter = 0; iter != maxiter; iter++) {
