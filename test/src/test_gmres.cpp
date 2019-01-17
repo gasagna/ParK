@@ -10,7 +10,7 @@ using namespace ParK;
 TEST_CASE("gmres-serial", "tests") {
 
     // see Trefthen and Bau for this test case
-    int m = 200;
+    int m = 50;
 
     // define shorthand
     using Vec = Test::Vec<double>;
@@ -39,14 +39,39 @@ TEST_CASE("gmres-serial", "tests") {
     Vec b   = A * x;
     Vec sol = b;
 
-    // solve in place. In 20 iterations the
-    // residual should drop by a factor of 10^8
-    auto opts = GMRESOptions(1e-8, 20, true);
-    solve_gmres(A, sol, opts);
+    SECTION("classical solution") {
+        // solve in place. In 20 iterations the
+        // residual should drop by a factor of 10^8
+        auto opts = GMRESOptions(1e-8, 20, true);
+        solve_gmres(A, sol, opts);
 
-    // subtract exact solution, this should
-    Vec err = sol - x;
-    REQUIRE(norm(err) / norm(b) < 1e-8);
+        // subtract exact solution, this should
+        Vec err = sol - x;
+        REQUIRE(norm(err) / norm(b) < 1e-8);
+    }
+
+    // for large delta the solution of 
+    //  min_x ||A*x - b|| s.t. ||x|| < delta
+    // is the exact solution, with small residual
+    SECTION("hookstep calculations large") {
+        double delta = 100;
+        // solve in place. In 20 iterations the
+        // residual should drop like before
+        auto opts = GMRESOptions(1e-8, 20, true);
+        solve_gmres(A, sol, delta, opts);
+
+        // subtract exact solution, this should
+        Vec err = sol - x;
+        REQUIRE(norm(err) / norm(b) < 1e-8);
+    }
+
+    // for small delta we need to respect the constraint
+    SECTION("hookstep calculations small") {
+        double delta = 1;
+        auto opts = GMRESOptions(1e-10, 50, true);
+        solve_gmres(A, sol, delta, opts);
+        REQUIRE(std::fabs(norm(sol) - 1.0) < 1e-7);
+    }
 }
 
 TEST_CASE("gmres-dvec", "tests") {
